@@ -29,3 +29,4 @@ streamlit
 # Utilities
 python-dotenv
 pydantic
+fpdf2
