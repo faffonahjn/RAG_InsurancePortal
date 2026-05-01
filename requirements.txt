@@ -1,0 +1,31 @@
+# Core RAG
+langchain
+langchain-community
+langchain-chroma
+langchain-groq
+langchain-huggingface
+langchain-text-splitters
+
+# Embeddings
+sentence-transformers
+
+# Vector DB
+chromadb
+
+# LLM
+groq
+
+# Document processing
+pdfplumber
+
+# API
+fastapi
+uvicorn[standard]
+python-multipart
+
+# UI
+streamlit
+
+# Utilities
+python-dotenv
+pydantic
