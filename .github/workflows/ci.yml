@@ -1,0 +1,63 @@
+name: RAG Pipeline CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install --timeout=300 --retries=5 -r requirements.txt
+
+    - name: Create test PDF
+      run: |
+        python -c "
+        from fpdf import FPDF
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font('Helvetica', size=12)
+        lines = [
+            'Section 1: Fire and Allied Perils',
+            'Allied Perils covered: Fire, Explosion, Flood, Earthquake.',
+            'Section 3: Money - Limit out of safe: GH 5000.',
+            'Section 4: Rent - Up to Six months coverage.',
+            'Section 5: Third Party Liability - Maximum GH 40000.',
+            'Section 6: Family Personal Accident - Maximum GH 30000.',
+        ]
+        for line in lines:
+            pdf.cell(200, 10, text=line, ln=True)
+        import os
+        os.makedirs('data', exist_ok=True)
+        pdf.output('data/insurance_policy.pdf')
+        print('Test PDF created.')
+        "
+
+    - name: Ingest test document
+      env:
+        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      run: |
+        python app/ingest.py
+
+    - name: Run evaluation
+      env:
+        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      run: |
+        python tests/test_pipeline.py
+
+    - name: Docker build check
+      run: |
+        docker build -t rag-insurance-portal .
